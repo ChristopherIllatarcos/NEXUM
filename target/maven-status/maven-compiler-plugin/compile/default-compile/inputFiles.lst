@@ -1,9 +1,14 @@
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\conexion\Conexion.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\conexion\ProbarConexion.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\controlador\ParametroController.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\ClienteDAO.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\ParametroDAO.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\ProductoVentaDAO.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\VendedorDAO.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\VentaDAO.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\NEXUM.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgBuscadorProductos.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgBuscarCliente.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgParametros.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgVenta.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\FrmPrincipal.java

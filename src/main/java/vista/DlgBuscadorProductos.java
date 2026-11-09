@@ -1,5 +1,6 @@
 package vista;
 
+import dao.ProductoVentaDAO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -12,6 +13,8 @@ public class DlgBuscadorProductos extends javax.swing.JDialog {
     private JList<String> listaProductos;
     private DefaultListModel<String> modeloLista;
     private String productoSeleccionado = null;
+    private String codigoBarraSeleccionado = "";
+    
 
     /**
      * Creates new form DlgBuscadorProductos
@@ -39,9 +42,9 @@ public class DlgBuscadorProductos extends javax.swing.JDialog {
         panelEncabezado.add(lblTitulo);
         add(panelEncabezado, BorderLayout.NORTH);
 
-        // Lista de productos simulando la tercera imagen
+        // Cargamos los productos reales desde la BD de PostgreSQL
         modeloLista = new DefaultListModel<>();
-        cargarDatosPrueba(filtroInicial);
+        cargarProductosDesdeBD(filtroInicial);
 
         listaProductos = new JList<>(modeloLista);
         listaProductos.setFont(new Font("Segoe UI", Font.PLAIN, 15));
@@ -77,48 +80,63 @@ public class DlgBuscadorProductos extends javax.swing.JDialog {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
-    private void cargarDatosPrueba(String filtro) {
-        // Datos simulados idénticos a tu sistema clásico
-        String[][] productos = {
-            {"TEN", "TENDEREDO", "$36,000.00"},
-            {"TETER", "TETERA 2,5 LT.", "$28,000.00"},
-            {"TETE", "TETERA 4 LT ACERO", "$29,000.00"},
-            {"TA", "TETERA ACERO 3LT", "$24,000.00"},
-            {"TT", "TETERA ALUM 3LT", "$19,000.00"},
-            {"TET", "TETERA ALUM 4LT", "$22,000.00"},
-            {"TE", "TETERA ALUM 5LT", "$25,000.00"},
-            {"TH", "THERMO", "$36,000.00"},
-            {"TERH", "THERMO-HERVIDOR", "$68,000.00"},
-            {"TOALLA", "TOALLA", "$19,000.00"},
-            {"TDP", "TOALLA PLAYA", "$12,000.00"},
-            {"TOALLA INF", "TOALLA PLAYA INANTIL", "$14,000.00"}
-        };
+    private void cargarProductosDesdeBD(String filtro) {
+        modeloLista.clear();
 
-        for (String[] p : productos) {
-            String linea = String.format("%-15s   %-35s   %s", p[0], p[1], p[2]);
-            if (filtro.isEmpty() || p[0].toLowerCase().startsWith(filtro.toLowerCase()) || p[1].toLowerCase().contains(filtro.toLowerCase())) {
-                modeloLista.addElement(linea);
-            }
-        }
-        if (modeloLista.isEmpty()) {
-            modeloLista.addElement("TEN        TENDEREDO                             $36,000.00");
-        }
+        ProductoVentaDAO dao = new ProductoVentaDAO();
+        java.util.List<Object[]> lista = dao.buscarProductosYVendedorDAO(filtro);
 
+        for (Object[] prod : lista) {
+            // [0] = codigo_barra, [1] = descripcion, [2] = color, [3] = precio
+            String barra = prod[0] != null ? prod[0].toString() : "";
+            String desc = prod[1] != null ? prod[1].toString() : "";
+            String color = prod[2] != null ? prod[2].toString() : "";
+            double precio = prod[3] != null ? Double.parseDouble(prod[3].toString()) : 0.0;
+
+            // Formateamos una línea limpia para el JList (ej: [TEN] - TENDEREDO ($36.000))
+            String itemTexto = String.format("[%-10s] %s %s - $%,.0f",
+                    barra,
+                    desc,
+                    (!color.isEmpty() && !color.equalsIgnoreCase("NULL") ? "(" + color + ")" : ""),
+                    precio
+            );
+
+            modeloLista.addElement(itemTexto);
+        }
     }
 
     private void seleccionarYSalir() {
         String seleccionado = listaProductos.getSelectedValue();
-        if (seleccionado != null) {
-            // Extraer descripción del producto seleccionado
-            productoSeleccionado = seleccionado.substring(15, 50).trim();
+        if (seleccionado != null && !seleccionado.startsWith("No se encontraron")) {
+            // El formato que guardamos es: "[TEN]    TENDEREDO    $36,000.00"
+            try {
+                // Extraemos el código de barra que está entre los corchetes [...]
+                int inicioCorchete = seleccionado.indexOf("[");
+                int finCorchete = seleccionado.indexOf("]");
+                if (inicioCorchete != -1 && finCorchete != -1) {
+                    codigoBarraSeleccionado = seleccionado.substring(inicioCorchete + 1, finCorchete).trim();
+                }
+
+                // Extraemos la descripción (lo que está entre el ']' y el símbolo '$')
+                int indiceDolar = seleccionado.lastIndexOf("$");
+                if (finCorchete != -1 && indiceDolar != -1) {
+                    productoSeleccionado = seleccionado.substring(finCorchete + 1, indiceDolar).trim();
+                }
+            } catch (Exception e) {
+                System.err.println("Error al parsear el ítem seleccionado: " + e.getMessage());
+            }
         }
         dispose();
+    }
+
+    public String getCodigoSeleccionado() {
+        return codigoBarraSeleccionado;
     }
 
     public String getProductoSeleccionado() {
         return productoSeleccionado;
     }
-    
+
     public double getPrecioSeleccionado() {
         String seleccionado = listaProductos.getSelectedValue();
         if (seleccionado != null) {

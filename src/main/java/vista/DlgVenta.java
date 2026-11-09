@@ -1,5 +1,7 @@
 package vista;
 
+import dao.ProductoVentaDAO;
+import dao.VendedorDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -10,8 +12,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -34,8 +38,8 @@ public class DlgVenta extends javax.swing.JDialog {
     private JTextField txtVendedor;
     private JLabel lblNombreVendedor;
 
-    private JTextField txtIngresoRapido; // Para escribir 'TEN'
-    private JTextField txtCantidad;    // Campo 'uni' para la cantidad
+    private JTextField txtIngresoRapido;
+    private JTextField txtCantidad;
 
     private JTable tablaVenta;
     private DefaultTableModel modeloTablaVenta;
@@ -53,6 +57,19 @@ public class DlgVenta extends javax.swing.JDialog {
     private String descripcionSeleccionada = "";
     private double precioUnitarioSeleccionado = 0.0;
 
+    // Campos de texto para los datos del cliente en DlgVenta
+    private JTextField txtRutCliente = new JTextField(15);
+    private JTextField txtNombreCliente = new JTextField(25);
+    private JTextField txtDireccion = new JTextField(25);
+    private JTextField txtComuna = new JTextField(15);
+    private JTextField txtSector = new JTextField(15);
+    private JTextField txtCelular = new JTextField(12);
+    private JComboBox<String> cmbCondicionPago = new JComboBox<>(new String[]{"Contado", "Crédito"});
+    private JTextField txtDias = new JTextField(5);
+    private JTextField txtPlazo = new JTextField(10);
+    private JTextField txtCiudad = new JTextField(15);
+    private JTextField txtCodigoProducto = new JTextField(15);
+
     public DlgVenta(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -60,13 +77,44 @@ public class DlgVenta extends javax.swing.JDialog {
 
     }
 
+    private void atajof8() {
+        // ==========================================
+        // CONFIGURACIÓN DE ATAJO F8 PARA CLIENTES
+        // ==========================================
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), "abrirBuscarCliente");
+
+        getRootPane().getActionMap().put("abrirBuscarCliente", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                DlgBuscarCliente buscador = new DlgBuscarCliente(DlgVenta.this, true);
+                buscador.setVisible(true);
+
+                // Al cerrarse el diálogo, recuperamos el cliente seleccionado y autocompletamos
+                String[] datosCliente = buscador.getClienteSeleccionado();
+                if (datosCliente != null) {
+                    // Suponiendo que tienes tus JTextField en DlgVenta:
+                    txtRutCliente.setText(datosCliente[0]);      // RUT
+                    txtNombreCliente.setText(datosCliente[1]);   // Nombre
+                    txtDireccion.setText(datosCliente[2]);       // Dirección
+                    txtComuna.setText(datosCliente[3]);          // Comuna
+                    txtSector.setText(datosCliente[4]);          // Sector
+                    txtCelular.setText(datosCliente[5]);         // Celular
+                    cmbCondicionPago.setSelectedItem(datosCliente[6]); // Condición de pago
+                    txtDias.setText(datosCliente[7]);            // Días
+                    txtPlazo.setText(datosCliente[8]);           // Plazo
+                    txtCiudad.setText(datosCliente[9]);          // Ciudad
+                    //txtCodigoProducto.requestFocusInWindow();
+                }
+            }
+        });
+    }
+
     private void initComponentsCustom() {
-        setTitle("NEXUM - Ingreso de Venta");
+        setTitle("Ingreso de Venta");
         setSize(1100, 700);
         setLocationRelativeTo(getParent());
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-        // Usamos JLayeredPane para poder poner la tablita de búsqueda flotando encima de la grilla
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setLayout(null);
         setContentPane(layeredPane);
@@ -82,7 +130,7 @@ public class DlgVenta extends javax.swing.JDialog {
         panelSuperior.setBackground(azulFondo);
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
-        // Vendedor
+        // Vendedor (Dinámico desde la BD)
         JPanel panelVendedor = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         panelVendedor.setOpaque(false);
         JLabel lblVende = new JLabel("Vende:");
@@ -91,14 +139,14 @@ public class DlgVenta extends javax.swing.JDialog {
 
         txtVendedor = new JTextField(4);
         txtVendedor.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        txtVendedor.setText("5");
+        txtVendedor.setText(""); // Valor por defecto
         txtVendedor.addActionListener(e -> {
             buscarVendedor();
             txtIngresoRapido.requestFocusInWindow();
             txtIngresoRapido.selectAll();
         });
 
-        lblNombreVendedor = new JLabel("JOSE ESCARATE");
+        lblNombreVendedor = new JLabel(""); // Se llenará dinámicamente desde la BD
         lblNombreVendedor.setForeground(Color.YELLOW);
         lblNombreVendedor.setFont(new Font("Segoe UI", Font.BOLD, 15));
 
@@ -175,11 +223,10 @@ public class DlgVenta extends javax.swing.JDialog {
         tablaBuscadorFlotante.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         scrollBuscadorFlotante = new JScrollPane(tablaBuscadorFlotante);
-        scrollBuscadorFlotante.setBounds(50, 180, 850, 250); // Posición flotante sobre la grilla
-        scrollBuscadorFlotante.setVisible(false); // Oculta por defecto
+        scrollBuscadorFlotante.setBounds(50, 180, 850, 250);
+        scrollBuscadorFlotante.setVisible(false);
         layeredPane.add(scrollBuscadorFlotante, JLayeredPane.PALETTE_LAYER);
 
-        // Evento al presionar Enter dentro de la tablita flotante para elegir el producto
         tablaBuscadorFlotante.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -201,17 +248,14 @@ public class DlgVenta extends javax.swing.JDialog {
         JPanel panelInputsLinea = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         panelInputsLinea.setOpaque(false);
 
-        // Barra de producto
         JLabel lblIngreso = new JLabel("Barra/Prod:");
         lblIngreso.setForeground(Color.WHITE);
         lblIngreso.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         txtIngresoRapido = new JTextField(20);
         txtIngresoRapido.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        // Al escribir y dar Enter, filtra y muestra la tabla flotante
         txtIngresoRapido.addActionListener(e -> filtrarYMostrarBuscador());
 
-        // Campo Cantidad (uni)
         JLabel lblCant = new JLabel("uni:");
         lblCant.setForeground(Color.WHITE);
         lblCant.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -219,7 +263,7 @@ public class DlgVenta extends javax.swing.JDialog {
         txtCantidad = new JTextField(5);
         txtCantidad.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         txtCantidad.setText("1");
-        txtCantidad.setEnabled(false); // Se activa tras elegir el producto
+        txtCantidad.setEnabled(false);
         txtCantidad.addActionListener(e -> confirmarYAgregarItemTabla());
 
         panelInputsLinea.add(lblIngreso);
@@ -227,8 +271,7 @@ public class DlgVenta extends javax.swing.JDialog {
         panelInputsLinea.add(lblCant);
         panelInputsLinea.add(txtCantidad);
 
-        // Pie de atajos estilo dBase
-        JLabel lblAtajos = new JLabel("(Esc)apar   (F4): Eliminar   (F8): Cliente   (F10): Descto");
+        JLabel lblAtajos = new JLabel("(Esc)apar    (F4): Eliminar    (F8): Cliente    (F10): Descto");
         lblAtajos.setForeground(new Color(220, 220, 220));
         lblAtajos.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
@@ -236,31 +279,54 @@ public class DlgVenta extends javax.swing.JDialog {
         panelInferior.add(lblAtajos, BorderLayout.SOUTH);
         layeredPane.add(panelInferior, JLayeredPane.DEFAULT_LAYER);
 
-        // Atajo global ESC
+        // ==========================================
+        // ATAJOS GLOBALES DE TECLADO
+        // ==========================================
         getRootPane().registerKeyboardAction(ev -> dispose(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+        // Llamamos a tu método de atajo F8 para clientes
+        atajof8();
+
+        // ==========================================
+        // CARGA INICIAL DESDE LA BASE DE DATOS
+        // ==========================================
+        // Consulta al iniciar la ventana el nombre del vendedor por defecto (ej. código 5)
+        buscarVendedor();
 
         txtIngresoRapido.requestFocusInWindow();
     }
 
     private void buscarVendedor() {
-        String codigo = txtVendedor.getText().trim();
-        switch (codigo) {
-            case "1" ->
-                lblNombreVendedor.setText("JUAN PEREZ");
-            case "2" ->
-                lblNombreVendedor.setText("MARIA SOTO");
-            case "3" ->
-                lblNombreVendedor.setText("CARLOS GOMEZ");
-            case "4" ->
-                lblNombreVendedor.setText("ANA MUÑOZ");
-            case "5" ->
-                lblNombreVendedor.setText("JOSE ESCARATE");
-            default ->
-                lblNombreVendedor.setText("VENDEDOR DESCONOCIDO");
+        try {
+            String textoCodigo = txtVendedor.getText().trim();
+            if (textoCodigo.isEmpty()) {
+                lblNombreVendedor.setText("INGRESE CÓDIGO");
+                return;
+            }
+
+            VendedorDAO dao = new VendedorDAO();
+            java.util.List<Object[]> lista = dao.cargarVendedoresDAO(textoCodigo);
+
+            boolean encontrado = false;
+            for (Object[] fila : lista) {
+                if (fila[0] != null && fila[0].toString().equals(textoCodigo)) {
+                    String nombreVendedor = (String) fila[2];
+                    lblNombreVendedor.setText(nombreVendedor);
+                    encontrado = true;
+                    break;
+                }
+            }
+
+            if (!encontrado) {
+                lblNombreVendedor.setText("VENDEDOR NO ENCONTRADO");
+            }
+
+        } catch (Exception e) {
+            lblNombreVendedor.setText("ERROR AL BUSCAR");
+            System.err.println("Error en buscarVendedor: " + e.getMessage());
         }
-        txtIngresoRapido.requestFocusInWindow();
     }
 
     // Confirma la cantidad ('uni'), calcula y mete la fila a la tabla principal
@@ -299,45 +365,51 @@ public class DlgVenta extends javax.swing.JDialog {
         }
     }
 
-    // Filtra y despliega la tabla flotante con los productos que coinciden (ej. "TEN")
     private void filtrarYMostrarBuscador() {
-        String texto = txtIngresoRapido.getText().trim().toLowerCase();
+        String texto = txtIngresoRapido.getText().trim();
         modeloBuscadorFlotante.setRowCount(0);
 
-        // Simulación de base de datos de productos (Barra, Descripción, Precio)
-        Object[][] catalogo = {
-            {"TEN", "TENDEREDO", 36000.0},
-            {"TETER", "TETERA 2,5 LT.", 28000.0},
-            {"TETE", "TETERA 4 LT ACERO", 29000.0},
-            {"TA", "TETERA ACERO 3LT", 24000.0},
-            {"TT", "TETERA ALUM 3LT", 19000.0},
-            {"TET", "TETERA ALUM 4LT", 22000.0},
-            {"TE", "TETERA ALUM 5LT", 25000.0},
-            {"TH", "THERMO", 36000.0},
-            {"TERH", "THERMO-HERVIDOR", 68000.0},
-            {"TOALLA", "TOALLA", 19000.0},
-            {"TDP", "TOALLA PLAYA", 12000.0},
-            {"TOALLA INF", "TOALLA PLAYA INFANTIL", 14000.0}
-        };
+        // Llamamos a tu DAO para consultar directamente la tabla public.productos en PostgreSQL
+        ProductoVentaDAO dao = new ProductoVentaDAO();
+        java.util.List<Object[]> listaProductos = dao.buscarProductosYVendedorDAO(texto);
 
-        for (Object[] prod : catalogo) {
-            String barra = prod[0].toString();
-            String desc = prod[1].toString();
-            if (texto.isEmpty() || barra.toLowerCase().startsWith(texto) || desc.toLowerCase().contains(texto)) {
-                modeloBuscadorFlotante.addRow(new Object[]{
-                    barra,
-                    desc,
-                    String.format("$%,.2f", prod[2])
-                });
+        for (Object[] prod : listaProductos) {
+            // Orden real devuelto por el DAO:
+            // [0] = codigo_barra, [1] = descripcion, [2] = color, [3] = precio
+            String barra = prod[0] != null ? prod[0].toString() : "";
+            String desc = prod[1] != null ? prod[1].toString() : "";
+            String color = prod[2] != null ? prod[2].toString() : "";
+
+           
+            if (!color.isEmpty() && !color.equalsIgnoreCase("NULL")) {
+                desc = desc + " (" + color + ")";
             }
+
+            double precio = 0.0;
+            try {
+                if (prod[3] != null) {
+                    precio = Double.parseDouble(prod[3].toString());
+                }
+            } catch (NumberFormatException e) {
+                precio = 0.0;
+            }
+
+            // Agregamos a la tabla flotante con formato de dinero limpio
+            modeloBuscadorFlotante.addRow(new Object[]{
+                barra,
+                desc,
+                String.format("$%,.2f", precio)
+            });
         }
 
+        // Mostramos u ocultamos la tablita flotante según los resultados
         if (modeloBuscadorFlotante.getRowCount() > 0) {
             tablaBuscadorFlotante.setRowSelectionInterval(0, 0);
             scrollBuscadorFlotante.setVisible(true);
             tablaBuscadorFlotante.requestFocusInWindow();
         } else {
-            JOptionPane.showMessageDialog(this, "No se encontraron productos.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            scrollBuscadorFlotante.setVisible(false);
+            JOptionPane.showMessageDialog(this, "No se encontraron productos en la base de datos.", "Aviso", JOptionPane.WARNING_MESSAGE);
         }
     }
 

@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
+
 package vista;
 
 import java.awt.Color;
@@ -55,7 +52,7 @@ public class PanelDashboard extends javax.swing.JPanel {
 
         contenedor.add(Box.createVerticalStrut(10));
 
-        JLabel lblSub = new JLabel("Atajos y Comandos Rápidos del Sistema");
+        JLabel lblSub = new JLabel("");
         lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         lblSub.setForeground(new Color(140, 140, 140));
         lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
