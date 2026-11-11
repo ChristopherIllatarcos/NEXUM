@@ -9,6 +9,7 @@ import java.awt.Frame;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -26,27 +27,30 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmPrincipal.class.getName());
 
-    /**
-     * Creates new form FrmPrincipal
-     */
+    private JDesktopPane escritorio = new JDesktopPane();
+
     public FrmPrincipal() {
         initComponents();
-        // 1. Evita que la ventana se achique por completo al restaurar o minimizar
+
+        // 1. Configuración de la ventana principal
         setMinimumSize(new Dimension(1024, 768));
         setSize(1024, 768);
-
-        // 2. Ventana maximizada ocupando toda la pantalla
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Configurar layout sobre el content pane para no romper lo que genera NetBeans
-        getContentPane().setLayout(new BorderLayout());
+        // 2. Establecer el JDesktopPane como el contenedor principal (ContentPane)
+        setContentPane(escritorio);
+        escritorio.setLayout(new BorderLayout());
 
-        // 3. Cargar la barra de menú limpia
+        // 3. Cargar la barra de menú superior
         configurarMenu();
-        inicializarVentanaPrincipal();
+
+        // 4. Colocar el Panel Dashboard de bienvenida al centro del escritorio
+        PanelDashboard dashboard = new PanelDashboard();
+        escritorio.add(dashboard, BorderLayout.CENTER);
+
+        // 5. Listeners para restaurar y minimizar
         minimizarPrincipal();
 
         setVisible(true);
@@ -126,6 +130,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 case 5 ->
                     item.setMnemonic(java.awt.event.KeyEvent.VK_6);
                 case 6 ->
+
                     item.setMnemonic(java.awt.event.KeyEvent.VK_7);
                 case 7 ->
                     item.setMnemonic(java.awt.event.KeyEvent.VK_8);
@@ -135,11 +140,47 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
             // Aquí puedes enlazar la acción de cada opción más adelante (por ejemplo, abrir sus respectivos Diálogos)
             final int indexAccion = i + 1;
+
+            // Acción individual para cada opción del menú
             item.addActionListener(e -> {
-                // TODO: Abrir la ventana correspondiente al módulo de ventas
-                DlgVenta ventanaVenta = new DlgVenta(this, true);
-                ventanaVenta.setVisible(true);
-                System.out.println("Seleccionado módulo Ventas op: " + indexAccion);
+                switch (indexAccion) {
+                    case 1 -> {
+                        // TODO: Abrir la ventana correspondiente al módulo de ventas
+                        DlgVenta ventanaVenta = new DlgVenta(this, true);
+                        ventanaVenta.setVisible(true);
+                        System.out.println("Seleccionado módulo Ventas op: " + indexAccion);
+                    }
+                    case 2 -> {
+                        // TODO: Aquí irá la lógica para "2. Listado de Documentos"
+                        System.out.println("Abriendo módulo: Listado de Documentos");
+                    }
+                    case 3 -> {
+
+                    }
+                    case 4 -> {
+                        // TODO: Cartola por Ventas
+                        System.out.println("Abriendo módulo: Cartola por Ventas");
+                    }
+                    case 5 -> {
+                        // TODO: Cartola por Fecha
+                        System.out.println("Abriendo módulo: Cartola por Fecha");
+                    }
+                    case 6 -> {
+                        FrmArchivoClientes frmClientes = new FrmArchivoClientes();
+                        escritorio.add(frmClientes);
+                        frmClientes.setVisible(true);
+                        try {
+                            frmClientes.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) { // <--- Cambiado de 'e' a 'ex'
+                            ex.printStackTrace();
+                        }
+                        break;
+                    }
+                }
+            });
+
+            item.addActionListener(e -> {
+
             });
 
             menuVentas.add(item);
@@ -231,11 +272,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
             }
 
-            // Aquí puedes enlazar la acción de cada opción más adelante (por ejemplo, abrir sus respectivos Diálogos)
+            // Aquí puedes enlazar la acción de cada opción del menú de Bodegas
             final int indexAccion = i + 1;
+
             item.addActionListener(e -> {
-                // TODO: Abrir la ventana correspondiente al módulo de Compras
-                System.out.println("Seleccionado módulo Bodegas op: " + indexAccion);
+                // Verificamos si es la opción 1 (REGISTROS DE PRODUCTOS)
+                if (indexAccion == 1) {
+                    DlgRegistroProductos dlg = new DlgRegistroProductos(this, true);
+                    dlg.setVisible(true);
+                } else {
+                    // Para las otras opciones del menú de bodegas (por ahora)
+                    System.out.println("Seleccionado módulo Bodegas op: " + indexAccion);
+                }
             });
 
             menuBodegas.add(item);
@@ -264,7 +312,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             item.setFont(fuenteSubMenu);
             item.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
 
-            // Asignar mnemónicos del 1 al 7 para acceso rápido por teclado
+            // Asignar mnemónicos del 1 al 6 para acceso rápido por teclado
             switch (i) {
                 case 0 ->
                     item.setMnemonic(java.awt.event.KeyEvent.VK_1);
@@ -278,14 +326,46 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     item.setMnemonic(java.awt.event.KeyEvent.VK_5);
                 case 5 ->
                     item.setMnemonic(java.awt.event.KeyEvent.VK_6);
-
             }
 
-            // Aquí puedes enlazar la acción de cada opción más adelante (por ejemplo, abrir sus respectivos Diálogos)
             final int indexAccion = i + 1;
+
+            // Acción individual para cada opción del menú
             item.addActionListener(e -> {
-                // TODO: Abrir la ventana correspondiente al módulo de CTACTE
-                System.out.println("Seleccionado módulo CTACTE op: " + indexAccion);
+                switch (indexAccion) {
+                    case 1 -> {
+                        // TODO: Aquí irá la lógica para "1. Eliminar Pago"
+                        System.out.println("Abriendo módulo: Eliminar Pago");
+                    }
+                    case 2 -> {
+                        // TODO: Aquí irá la lógica para "2. Listado de Documentos"
+                        System.out.println("Abriendo módulo: Listado de Documentos");
+                    }
+                    case 3 -> {
+
+                        FrmEstadisticasClientes frmCte = new FrmEstadisticasClientes();
+                        escritorio.add(frmCte);
+                        frmCte.setVisible(true);
+                        try {
+                            frmCte.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) { // <--- Cambiado de 'e' a 'ex'
+                            ex.printStackTrace();
+                        }
+                        break;
+                    }
+                    case 4 -> {
+                        // TODO: Cartola por Ventas
+                        System.out.println("Abriendo módulo: Cartola por Ventas");
+                    }
+                    case 5 -> {
+                        // TODO: Cartola por Fecha
+                        System.out.println("Abriendo módulo: Cartola por Fecha");
+                    }
+                    case 6 -> {
+                        // TODO: Cobros de la A a la Z
+                        System.out.println("Abriendo módulo: Cobros de la A a la Z");
+                    }
+                }
             });
 
             menuCtacte.add(item);
@@ -348,7 +428,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
             menuArchivos.add(item);
         }
-        
+
         // ==========================================
         // DISTRIBUCIÓN AUTOMÁTICA EN LA BARRA
         // ==========================================
@@ -362,13 +442,13 @@ public class FrmPrincipal extends javax.swing.JFrame {
         menuBar.add(menuCtacte);
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(menuArchivos);
-        
+
         menuBar.add(Box.createHorizontalStrut(30)); // Separación antes del título
-        
+
         JLabel lblTitulo = new JLabel("NEXUM");
         lblTitulo.setFont(fuenteTitulo);
         lblTitulo.setForeground(new Color(100, 180, 255)); // aqui se cambia el color del t´tulo
-        
+
         // ==========================================
         // CARGAR EL ICONO AL LADO IZQUIERDO
         // ==========================================
@@ -376,16 +456,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
             ImageIcon iconoNexum = new ImageIcon(getClass().getResource("/iconos/nexum-16.png"));
             lblTitulo.setIcon(iconoNexum);
             // Espacio entre el icono y la letra "N" de NEXUM (en píxeles)
-            lblTitulo.setIconTextGap(8); 
+            lblTitulo.setIconTextGap(8);
             // Posicionamos el texto a la derecha del icono
             lblTitulo.setHorizontalTextPosition(JLabel.RIGHT);
         } catch (Exception e) {
             System.out.println("No se pudo cargar el icono de la barra: " + e.getMessage());
         }
-        
+
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 15));
         menuBar.add(lblTitulo);
-        
+
         setJMenuBar(menuBar);
         revalidate();
         repaint();
@@ -416,23 +496,22 @@ public class FrmPrincipal extends javax.swing.JFrame {
 //        repaint();
     }
 
-    private void inicializarVentanaPrincipal() {
-        setTitle("");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Pantalla completa opcional
-        setLayout(new BorderLayout());
-
-        // 1. Cargar tu barra de menú arriba
-        configurarMenu();
-
-        // 2. Colocar el Panel Dashboard de bienvenida al centro
-        PanelDashboard dashboard = new PanelDashboard();
-        add(dashboard, BorderLayout.CENTER);
-
-        revalidate();
-        repaint();
-    }
-
+//    private void inicializarVentanaPrincipal() {
+//        setTitle("");
+//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        setExtendedState(JFrame.MAXIMIZED_BOTH); // Pantalla completa opcional
+//        setLayout(new BorderLayout());
+//
+//        // 1. Cargar tu barra de menú arriba
+//        configurarMenu();
+//
+//        // 2. Colocar el Panel Dashboard de bienvenida al centro
+//        PanelDashboard dashboard = new PanelDashboard();
+//        add(dashboard, BorderLayout.CENTER);
+//
+//        revalidate();
+//        repaint();
+//    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
