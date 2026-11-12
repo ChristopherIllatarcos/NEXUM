@@ -5,7 +5,7 @@ import modelo.EstadisticasClienteDTO;
 import javax.swing.*;
 import java.awt.*;
 
-public class FrmEstadisticasClientes extends javax.swing.JInternalFrame  {
+public class FrmEstadisticasClientes extends javax.swing.JInternalFrame {
 
     private JTextField txtRut;
     private JLabel lblNombre, lblSaldo;
@@ -135,10 +135,20 @@ public class FrmEstadisticasClientes extends javax.swing.JInternalFrame  {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
-    // 2. Constructor que recibe el RUT (para cuando viene desde el listado de clientes)
+    // Constructor que recibe el RUT desde la tabla principal
     public FrmEstadisticasClientes(String rut) {
-        this();
-        cargarDatosCliente(rut);
+        this(); // Llama al constructor visual principal
+
+        if (rut != null && !rut.trim().isEmpty()) {
+            txtRut.setText(rut);
+            cargarDatosCliente(rut);
+        }
+
+        // FORZAR UBICACIÓN Y VISIBILIDAD EXPLÍCITA EN EL ESCRITORIO
+        setSize(800, 560);
+        setLocation(50, 50); // Lo ubica visiblemente en la esquina superior izquierda del escritorio
+        setVisible(true);
+        toFront();
     }
 
     private JLabel crearLabelDato(JPanel panel, String textoEtiqueta) {

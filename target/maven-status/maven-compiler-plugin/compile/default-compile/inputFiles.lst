@@ -8,9 +8,13 @@ C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\VendedorDAO.ja
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\dao\VentaDAO.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\modelo\ClienteDTO.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\modelo\EstadisticasClienteDTO.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\modelo\ItemVentaDTO.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\NEXUM.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\utilidades\ClienteUtils.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\utilidades\PDFUtils.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgBuscadorProductos.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgBuscarCliente.java
+C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgClientes.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgNuevoProducto.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgParametros.java
 C:\Users\caill\Documents\NetBeansProjects\NEXUM\src\main\java\vista\DlgRegistroProductos.java

@@ -1,45 +1,36 @@
-
 package modelo;
 
 public class EstadisticasClienteDTO {
 
+    private String rut;
     private String nombre;
-    private double saldoActual;
+    private double saldoActual; 
 
     // Compras
     private int vecesCompro;
     private double totalCompro;
     private double promCompro;
-    private String ultimaCompra;
     private double maxCompro;
-    private String rut;
-    private double saldo_actual;
+    private String ultimaCompra;
 
-    public double getSaldo_actual() {
-        return saldo_actual;
+    // Pagos
+    private int vecesPago;
+    private double totalPago;
+    private double promPago;
+    private double maxPago;
+    private String ultimoPago;
+
+    // Constructores
+    public EstadisticasClienteDTO() {
     }
 
-    public void setSaldo_actual(double saldo_actual) {
-        this.saldo_actual = saldo_actual;
-    }
-
+    // Getters y Setters
     public String getRut() {
         return rut;
     }
 
     public void setRut(String rut) {
         this.rut = rut;
-    }
-
-    // Pagos
-    private int vecesPago;
-    private double totalPago;
-    private double promPago;
-    private String ultimoPago;
-    private double maxPago;
-
-    // Constructores, Getters y Setters
-    public EstadisticasClienteDTO() {
     }
 
     public String getNombre() {
@@ -82,20 +73,20 @@ public class EstadisticasClienteDTO {
         this.promCompro = promCompro;
     }
 
-    public String getUltimaCompra() {
-        return ultimaCompra;
-    }
-
-    public void setUltimaCompra(String ultimaCompra) {
-        this.ultimaCompra = ultimaCompra;
-    }
-
     public double getMaxCompro() {
         return maxCompro;
     }
 
     public void setMaxCompro(double maxCompro) {
         this.maxCompro = maxCompro;
+    }
+
+    public String getUltimaCompra() {
+        return ultimaCompra;
+    }
+
+    public void setUltimaCompra(String ultimaCompra) {
+        this.ultimaCompra = ultimaCompra;
     }
 
     public int getVecesPago() {
@@ -122,19 +113,19 @@ public class EstadisticasClienteDTO {
         this.promPago = promPago;
     }
 
-    public String getUltimoPago() {
-        return ultimoPago;
-    }
-
-    public void setUltimoPago(String ultimoPago) {
-        this.ultimoPago = ultimoPago;
-    }
-
     public double getMaxPago() {
         return maxPago;
     }
 
     public void setMaxPago(double maxPago) {
         this.maxPago = maxPago;
+    }
+
+    public String getUltimoPago() {
+        return ultimoPago;
+    }
+
+    public void setUltimoPago(String ultimoPago) {
+        this.ultimoPago = ultimoPago;
     }
 }
