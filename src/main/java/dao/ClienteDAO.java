@@ -71,15 +71,23 @@ public class ClienteDAO {
                 + "FROM pcliente_dbf "
                 + "WHERE TRIM(\"CLIRUT\")::text = ?";
 
-        String sqlCompras = "SELECT COUNT(*), COALESCE(SUM(CAST(NULLIF(\"VPXPRECIO\", '') AS NUMERIC)), 0), "
-                + "COALESCE(AVG(CAST(NULLIF(\"VPXPRECIO\", '') AS NUMERIC)), 0), "
-                + "COALESCE(MAX(CAST(NULLIF(\"VPXPRECIO\", '') AS NUMERIC)), 0), MAX(\"VFECHA\") "
-                + "FROM pcompra_dbf WHERE \"VCLIENTE\" = ?";
+        // --- CONSULTA DE COMPRAS ORDENADA CRONOLÓGICAMENTE ---
+        String sqlCompras = "SELECT COUNT(DISTINCT \"VCODIGO\"), "
+                + "COALESCE(SUM(CAST(NULLIF(REPLACE(CAST(\"VPXPRECIO\" AS TEXT), ',', '.'), '') AS NUMERIC)), 0), "
+                + "COALESCE(AVG(CAST(NULLIF(REPLACE(CAST(\"VPXPRECIO\" AS TEXT), ',', '.'), '') AS NUMERIC)), 0), "
+                + "COALESCE(MAX(CAST(NULLIF(REPLACE(CAST(\"VPXPRECIO\" AS TEXT), ',', '.'), '') AS NUMERIC)), 0), "
+                + "TO_CHAR(MAX(TO_DATE(NULLIF(TRIM(CAST(\"VFECHA\" AS TEXT)), ''), 'DD-MM-YYYY')), 'DD-MM-YYYY') "
+                + "FROM pventas_dbf WHERE TRIM(CAST(\"VCLIENTE\" AS text)) = ?";
 
-        // CTERUT se compara directamente como entero sin TRIM
-        String sqlPagos = "SELECT COUNT(*), COALESCE(SUM(\"CTEABONO\"), 0), COALESCE(AVG(\"CTEABONO\"), 0), "
-                + "COALESCE(MAX(\"CTEABONO\"), 0), MAX(\"CTEFECHA\") "
-                + "FROM pctacte_dbf WHERE \"CTERUT\" = ?";
+        // --- CONSULTA DE PAGOS ORDENADA CRONOLÓGICAMENTE ---
+        String sqlPagos = "SELECT COUNT(*), "
+                + "COALESCE(SUM(CAST(NULLIF(REPLACE(CAST(\"CTEABONO\" AS TEXT), ',', '.'), '') AS NUMERIC)), 0), "
+                + "COALESCE(AVG(CAST(NULLIF(REPLACE(CAST(\"CTEABONO\" AS TEXT), ',', '.'), '') AS NUMERIC)), 0), "
+                + "COALESCE(MAX(CAST(NULLIF(REPLACE(CAST(\"CTEABONO\" AS TEXT), ',', '.'), '') AS NUMERIC)), 0), "
+                + "TO_CHAR(MAX(TO_DATE(NULLIF(TRIM(CAST(\"CTEFECHA\" AS TEXT)), ''), 'DD-MM-YYYY')), 'DD-MM-YYYY') "
+                + "FROM pctacte_dbf "
+                + "WHERE TRIM(CAST(\"CTERUT\" AS text)) = ? "
+                + "AND COALESCE(CAST(NULLIF(REPLACE(CAST(\"CTEABONO\" AS TEXT), ',', '.'), '') AS NUMERIC), 0) > 0";
 
         try (Connection conn = Conexion.getConnection()) {
 
@@ -102,9 +110,9 @@ public class ClienteDAO {
             // Si el cliente existe, consultamos sus compras y pagos
             if (stats != null) {
 
-                // --- OBTENER ESTADÍSTICAS DE COMPRAS ---
+                // --- OBTENER ESTADÍSTICAS DE COMPRAS (PVENTAS) ---
                 try (PreparedStatement pstmtC = conn.prepareStatement(sqlCompras)) {
-                    pstmtC.setInt(1, rutInt);
+                    pstmtC.setString(1, String.valueOf(rutInt));
                     try (ResultSet rsC = pstmtC.executeQuery()) {
                         if (rsC.next()) {
                             stats.setVecesCompro(rsC.getInt(1));
@@ -120,7 +128,7 @@ public class ClienteDAO {
 
                 // --- OBTENER ESTADÍSTICAS DE PAGOS/ABONOS ---
                 try (PreparedStatement pstmtP = conn.prepareStatement(sqlPagos)) {
-                    pstmtP.setInt(1, rutInt); // Pasado como int directo para CTERUT
+                    pstmtP.setString(1, String.valueOf(rutInt));
                     try (ResultSet rsP = pstmtP.executeQuery()) {
                         if (rsP.next()) {
                             stats.setVecesPago(rsP.getInt(1));

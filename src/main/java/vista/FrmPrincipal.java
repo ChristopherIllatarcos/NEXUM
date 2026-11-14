@@ -1,11 +1,19 @@
 package vista;
 
+import vista.ctacte.FrmEstadisticasClientes;
+import vista.ventas.FrmArchivoClientes;
+import vista.ventas.DlgVenta;
 import com.formdev.flatlaf.FlatDarkLaf;
+import conexion.Conexion;
+import dao.CuentaCorrienteDAO;
+import dao.ProductoVentaDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Window;
+import java.sql.Connection;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -15,9 +23,19 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import vista.bodega.DlgProductos;
+import vista.compras.DlgProveedores;
+import vista.ctacte.FrmCarteraCheques;
+import vista.ctacte.FrmCartolaCliente;
+import vista.ctacte.FrmCartolaPorFecha;
+import vista.ctacte.FrmCuentasCobrarAlfabetico;
+import vista.ctacte.FrmEliminarRecibo;
+import vista.ventas.FrmMantencionVentas;
+import vista.ventas.FrmVenta;
 
 /**
  *
@@ -28,6 +46,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmPrincipal.class.getName());
 
     private JDesktopPane escritorio = new JDesktopPane();
+    private final CuentaCorrienteDAO dao = new CuentaCorrienteDAO();
 
     public FrmPrincipal() {
         initComponents();
@@ -145,9 +164,20 @@ public class FrmPrincipal extends javax.swing.JFrame {
             item.addActionListener(e -> {
                 switch (indexAccion) {
                     case 1 -> {
-                        // TODO: Abrir la ventana correspondiente al módulo de ventas
-                        DlgVenta ventanaVenta = new DlgVenta(this, true);
+                        // Abrimos el módulo de ventas actualizado como JInternalFrame
+                        FrmVenta ventanaVenta = new FrmVenta();
+
+                        // Lo agregamos al panel de escritorio principal (desktopPane)
+                        escritorio.add(ventanaVenta);
+
                         ventanaVenta.setVisible(true);
+
+                        try {
+                            ventanaVenta.setSelected(true); // Lo pasamos al frente si ya estaba abierto
+                        } catch (java.beans.PropertyVetoException ex) {
+                            ex.printStackTrace();
+                        }
+
                         System.out.println("Seleccionado módulo Ventas op: " + indexAccion);
                     }
                     case 2 -> {
@@ -158,8 +188,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
                     }
                     case 4 -> {
-                        // TODO: Cartola por Ventas
-                        System.out.println("Abriendo módulo: Cartola por Ventas");
+                        FrmMantencionVentas frmVentas = new FrmMantencionVentas();
+                        escritorio.add(frmVentas);
+                        frmVentas.setVisible(true);
+
+                        try {
+                            frmVentas.setSelected(true); 
+                        } catch (java.beans.PropertyVetoException ex) {
+                            ex.printStackTrace();
+                        }
+
                     }
                     case 5 -> {
                         // TODO: Cartola por Fecha
@@ -177,10 +215,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         break;
                     }
                 }
-            });
-
-            item.addActionListener(e -> {
-
             });
 
             menuVentas.add(item);
@@ -216,11 +250,23 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
             }
 
-            // Aquí puedes enlazar la acción de cada opción más adelante (por ejemplo, abrir sus respectivos Diálogos)
             final int indexAccion = i + 1;
             item.addActionListener(e -> {
-                // TODO: Abrir la ventana correspondiente al módulo de ventas
-                System.out.println("Seleccionado módulo Compras op: " + indexAccion);
+                switch (indexAccion) {
+                    case 1 -> {
+                        // Pasamos solo 'this' porque el constructor ya maneja la modalidad por dentro
+                        DlgProveedores ventanaPro = new DlgProveedores(this);
+                        ventanaPro.setVisible(true);
+                        System.out.println("Abriendo Maestro de Proveedores, op: " + indexAccion);
+                    }
+                    case 2 -> {
+
+                    }
+                    case 3 -> {
+                        // Siguiente opción de tu menú...
+                        System.out.println("Abriendo opción: " + indexAccion);
+                    }
+                }
             });
 
             menuCompras.add(item);
@@ -251,7 +297,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             item.setFont(fuenteSubMenu);
             item.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
 
-            // Asignar mnemónicos del 1 al 7 para acceso rápido por teclado
+            // Asignar mnemónicos del 1 al 8 para acceso rápido por teclado
             switch (i) {
                 case 0 ->
                     item.setMnemonic(java.awt.event.KeyEvent.VK_1);
@@ -269,20 +315,30 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     item.setMnemonic(java.awt.event.KeyEvent.VK_7);
                 case 7 ->
                     item.setMnemonic(java.awt.event.KeyEvent.VK_8);
-
             }
 
-            // Aquí puedes enlazar la acción de cada opción del menú de Bodegas
-            final int indexAccion = i + 1;
-
+            // Acción para cada opción del menú Bodegas
+            final int index = i;
             item.addActionListener(e -> {
-                // Verificamos si es la opción 1 (REGISTROS DE PRODUCTOS)
-                if (indexAccion == 1) {
-                    DlgRegistroProductos dlg = new DlgRegistroProductos(this, true);
+                if (index == 0) {
+                    // Opción 0: Fichero Productos (Principal) como JInternalFrame
+                    DlgProductos dlg = new DlgProductos();
+
+                    // Lo agregamos al panel de escritorio principal de tu aplicación MDI
+                    escritorio.add(dlg); // (Asegúrate de cambiar 'desktopPane' por el nombre de tu variable JDesktopPane si se llama diferente, ej: escritorio.add(dlg);)
+
                     dlg.setVisible(true);
+                    try {
+                        dlg.setSelected(true); // Lo pasamos al frente si ya estaba abierto
+                    } catch (java.beans.PropertyVetoException ex) {
+                        ex.printStackTrace();
+                    }
                 } else {
-                    // Para las otras opciones del menú de bodegas (por ahora)
-                    System.out.println("Seleccionado módulo Bodegas op: " + indexAccion);
+                    // Espacio para los demás ítems del menú de bodegas
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                            "Módulo en desarrollo: " + itemsBodegas[index],
+                            "Información",
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
                 }
             });
 
@@ -334,12 +390,26 @@ public class FrmPrincipal extends javax.swing.JFrame {
             item.addActionListener(e -> {
                 switch (indexAccion) {
                     case 1 -> {
-                        // TODO: Aquí irá la lógica para "1. Eliminar Pago"
-                        System.out.println("Abriendo módulo: Eliminar Pago");
+                        // Como 'this' es tu ventana principal (que contiene el JDesktopPane o puedes acceder a él)
+                        // Reemplaza 'this.desktopPane' por el nombre de tu variable JDesktopPane real si se llama distinto.
+                        FrmEliminarRecibo frmEliminar = new FrmEliminarRecibo();
+                        this.escritorio.add(frmEliminar);
+                        frmEliminar.setVisible(true);
+                        try {
+                            frmEliminar.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                     case 2 -> {
-                        // TODO: Aquí irá la lógica para "2. Listado de Documentos"
-                        System.out.println("Abriendo módulo: Listado de Documentos");
+                        FrmCarteraCheques frmCartera = new FrmCarteraCheques();
+                        escritorio.add(frmCartera);
+                        frmCartera.setVisible(true);
+                        try {
+                            frmCartera.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                     case 3 -> {
 
@@ -354,16 +424,35 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         break;
                     }
                     case 4 -> {
-                        // TODO: Cartola por Ventas
-                        System.out.println("Abriendo módulo: Cartola por Ventas");
+                        FrmCartolaCliente frmCartola = new FrmCartolaCliente();
+                        escritorio.add(frmCartola);
+                        frmCartola.setVisible(true);
+                        try {
+                            frmCartola.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) { // <--- Cambiado de 'e' a 'ex'
+                            ex.printStackTrace();
+                        }
+                        break;
                     }
                     case 5 -> {
-                        // TODO: Cartola por Fecha
-                        System.out.println("Abriendo módulo: Cartola por Fecha");
+                        FrmCartolaPorFecha frmFecha = new FrmCartolaPorFecha();
+                        escritorio.add(frmFecha);
+                        frmFecha.setVisible(true);
+                        try {
+                            frmFecha.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                     case 6 -> {
-                        // TODO: Cobros de la A a la Z
-                        System.out.println("Abriendo módulo: Cobros de la A a la Z");
+                        FrmCuentasCobrarAlfabetico frmCuentas = new FrmCuentasCobrarAlfabetico();
+                        this.escritorio.add(frmCuentas);
+                        frmCuentas.setVisible(true);
+                        try {
+                            frmCuentas.setSelected(true);
+                        } catch (java.beans.PropertyVetoException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
             });

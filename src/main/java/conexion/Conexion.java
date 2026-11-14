@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class Conexion {
     // Configura aquí los datos de tu servidor PostgreSQL local
-    private static final String URL = "jdbc:postgresql://localhost:5432/DBASE"; 
+    private static final String URL = "jdbc:postgresql://localhost:5432/NEXUM_BD"; 
     private static final String USUARIO = "postgres";
     private static final String PASSWORD = "nA4pYRSr2ziagy"; 
 
@@ -30,5 +30,9 @@ public class Conexion {
             System.err.println("Error de SQL al intentar conectar con la base de datos.");
         }
         return conexion;
+    }
+
+    public static Connection obtenerConexion() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
